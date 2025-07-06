@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مين معانا؟</title>
+    <style>
+        :root {
+            --primary-color: #2ecc71;    /* Green */
+            --secondary-color: #e67e22;  /* Orange */
+            --tertiary-color: #3498db;   /* Blue */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f6fa;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 55px;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            /* text-shadow: 2px 2px var(--primary-color); */
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 200px;
+            perspective: 1000px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.2em;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .flip-card-front {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .flip-card-back {
+            background-color: var(--secondary-color);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>عرفنا على نفسك</h1>
+    <div class="container" id="cardContainer"></div>
+
+    <script>
+        // Sample quotes/questions (you can add more)
+        const cardContent = [
+        "وش أول شيء ممكن تسويه لو صار عندك مليون ريال؟",
+        "وش أكثر أكلة تحبها؟ (مالح وحالي)",
+        "لو تقدر تسافر لأي مكان في العالم، وين تروح؟",
+        "وش الصفة اللي تعجبك في نفسك؟ وصفة ودك تغيرها؟",
+        "لو معك آلة زمن، تروح لأي فترة زمنية؟",
+        "من أكثر شخصية أثرت فيك؟",
+        "لو كنت بطل خارق، وش القوة اللي ودك تملكها؟",
+        "وش أكثر شيء تحبه في شغلك؟",
+        "لو تقدر تغير شيء واحد في حياتك، وش بيكون؟",
+        "لو ما كنت صيدلي، تتمنى تكون إيش؟",
+        "لو تقدر تتعلم مهارة في يوم واحد، وش تختار؟",
+        "وش أكثر موقف محرج أو مضحك صار لك؟",
+        "وش المادة اللي كنت تحبها أكثر أيام الجامعة؟",
+        "لو كنت تملك سلسلة صيدليات، وش أول قرار بتتخذه؟",
+        "لو قابلت نفسك قبل 10 سنوات، وش بتنصحها؟",
+        "وش أول شيء تسويه إذا بدأت يومك؟",
+        "لو صرت مشهور فجأة، تتوقع بتشتهر بإيش؟",
+        "وش أكثر تطبيق تستخدمه في شغلك؟",
+        "وش الشيء اللي يضحكك دايمًا مهما كانت الظروف؟",
+        "وش الدولة اللي تتمنى تزورها؟",
+        "تحب تسهر ولا تقوم بدري؟",
+        "وش العادة الزينة اللي ملتزم فيها؟ وعادة ودك تتخلص منها؟",
+        "وش أكثر شيء كنت تخاف منه وأنت صغير؟",
+        "شاركنا معلومة غريبة أو سر بسيط عنك",
+        "وش هواياتك المفضلة؟",
+        "كيف تستغل وقت فراغك؟",
+        "وش أكثر مجال تحب تقرأ فيه؟",
+        "وش أكثر شيء يحفزك؟",
+        "وش التطبيق اللي ما تقدر تستغني عنه في يومك؟",
+        "لو جاءك يوم إجازة فجأة، وش بتسوي فيه؟",
+        "وش أكتر انجاز فخور فيه؟",
+        "وش أكثر حالة مرضية يجيك سؤال عنها بشكل متكرر في الصيدلية؟",
+        "إيش أكثر سؤال محرج سألك عنه؟ وكيف رديت عليه؟",
+        "لو فيه دواء واحد ما تقدر تستغني عنه في شغلك، وش هو؟",
+        "وش النصيحة اللي دائمًا تعطيها لأي مراجع يطلب مضاد حيوي؟",
+        "وش المنتج أو الدواء اللي دائمًا تنصح فيه لأنك مجربه شخصيًا؟",
+        "وش المهارة اللي تعتقد إنها أهم شيء لنجاح الصيدلي؟",
+        "لو قدرت تغير حاجة وحدة في بيئة العمل الصيدلي، وش راح تكون؟",
+        "وش أكثر منتج OTC تحس إنه مظلوم إعلاميًا ويستاهل تسويق أكثر؟",
+        "وش أكثر حالة تفرحك لما تساعد فيها مراجع؟",
+        "هل قد جاءك مراجع شكرك بكلام أثر فيك؟ شاركنا التجربة.",
+        "لو تقدر تعطي طالب جديد نصيحة وحدة بس، وش بتقول له؟",
+        "وش الفرق بين الصيدلي المتميز والعادي من وجهة نظرك؟",
+        "إيش أغرب منتج أو دواء سألت عنه في يوم من الأيام؟",
+        "وش أشهر خطأ شائع يقع فيه الناس بخصوص الأدوية؟",
+        "لو بتحضر ورشة للصيادلة ، وش الموضوع اللي تختاره؟",
+        "وش أكثر شيء تحب تتابعه عشان تطور من نفسك كصيدلي؟",
+        "وش التطبيق أو الموقع اللي تستخدمه دايم في الاستشارات الدوائية؟",
+        "لو فيه دورة أو تدريب تقدر تحضره حاليًا، تختار في أي مجال؟",
+        "وش أكثر شيء يحفزك تستمر وتبدع في مهنة الصيدلة؟",
+        "هل قد ساعدت احد في موقف صحي حرج؟ كيف كان شعورك وقتها؟",
+        "وش أكثر شيء تحب تسويه في وقت فراغك؟",
+        "وش الشئ اللي تحب تسويه مع أصدقائك في نهاية الأسبوع؟",
+        "وش الكتاب اللى تحب تقرأه أو قرأته مؤخرًا؟",
+        "وش الرياضة اللي تحبها أو متميز فيها؟"
+        ];
+
+        // Generate cards
+        const container = document.getElementById('cardContainer');
+        
+        for (let i = 1; i <= cardContent.length; i++) {
+            const card = document.createElement('div');
+            card.className = 'flip-card';
+            card.innerHTML = `
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">${i}</div>
+                    <div class="flip-card-back">
+                        ${cardContent[i] || "New challenges await!"}
+                    </div>
+                </div>
+            `;
+
+            card.addEventListener('click', function() {
+                this.classList.toggle('flipped');
+            });
+
+            container.appendChild(card);
+        }
+    </script>
+</body>
+</html>
